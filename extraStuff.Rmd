@@ -95,13 +95,12 @@ The algorithm fails to converge for one of the values off the plot to the left. 
 
 ### Proof of nonexistance of nontrivial calibration when critical $|t|\leq1$
 
-The logarithm $B$ of the scaled information Bayes factor is
-
+The logarithm $B$ of the scaled information Bayes factor in favor of the null is
 \[
-B =   -\frac{N}{2}\log\left(1 + \frac{t^2}{N-1}\right) + \frac{1}{2}\log\left(1 + N\tau^2\right) + \frac{N}{2}\log\left(1 + \frac{t^2}{ (1 + N\tau^2)( N - 1 ) } \right)
+B =   -\frac{N}{2}\log\left(1 + \frac{t^2}{N-1}\right) +  \frac{N}{2}\log\left(1 + \frac{t^2}{ (1 + N\tau^2)( N - 1 ) } \right)  + \frac{1}{2}\log\left(1 + N\tau^2\right)
 \]
-
-Both definitions of calibration suggested by HKH involve finding a $\tau$ such that $B=0$ for a given critical $t$. A nontrivial HKH-calibration only exists when the is a $\tau>0$ such that $B=0$. If the solution is $\tau=0$, then the Bayes factor will be 1 regardless of the data, because the null and alternative are the same. This can be verified by setting $\tau=0$ in the equation for the scaled-information Bayes factor formula above.
+This will be a decrase
+Both definitions of calibration suggested by HKH involve finding a $\tau$ such that $B=0$ for a given critical $t$. A nontrivial HKH-calibration only exists when there is a $\tau>0$ such that $B=0$. If the solution is $\tau=0$, then the Bayes factor will be 1 regardless of the data, because the null and alternative are the same. This can be verified by setting $\tau=0$ in the equation for the scaled-information Bayes factor formula above.
 
 It is also trivial to show that
 \[
@@ -217,4 +216,62 @@ abline(h = exp((N-1)/2*log(1 + N*calibrated_tau(d1[2], N)^2)), col="red")
 ```
 
 It should be noted that this limiting behaviour for the scaled-information Bayes factor is known (see Liang et al. 2008, who call it the *information paradox*; the existence of this limit has been used as an argument for the JZS prior) but for most reasonable analysis, this limit is very large. For HKH-calibration, however, the very small size of $\tau$ makes the limit a much more modest size.
+
+### Proof that criteria approach $\delta_1/2$ as $N\rightarrow\infty$
+
+Here we prove that as $N\rightarrow\infty$, the critical $d$ for the equal-error two-sided significance test approaches $\delta_1/2$ described in the manuscript. 
+
+First, we note that the sampling distribution of $d$ is approximately normal for moderate to large $N$, with the approximation improving as $N\rightarrow\infty$:
+\[
+d\stackrel{approx.}{\sim}\mbox{Normal}(\delta,1/N).
+\]
+Assuming this approximation, let $\pm z_n$ be the critera for an equal-error sided significance test against $\delta=\delta_1$ when $N=n$. This means that
+\[
+1-\Phi(z_n\sqrt{N}) = \Phi(-z_n\sqrt{N}) = \alpha_n/2,
+\]
+where $\Phi$ is the CDF of the standard normal distribution, and $\alpha_n$ is the Type I error rate when $N=n$; and
+\[
+\Phi\left(\left(z_n - \delta_1\right)\sqrt{N}\right) - \Phi\left(\left(-z_n - \delta_1\right)\sqrt{N}\right) = \beta_n.
+\]
+where $\beta_n$ is the Type II error rate when $N=n$. Since we assume equal errors, $\alpha_n = \beta_n$, and thus
+\[
+\begin{eqnarray*}
+1 &=& \beta_n/\alpha_n\\ 
+  &=& \frac{\Phi\left(\left(z_n - \delta_1\right)\sqrt{N}\right) - \Phi\left(\left(-z_n - \delta_1\right)\sqrt{N}\right)}{2\Phi(-z_n\sqrt{N})}\\
+  &=&\frac{\Phi\left(\left(z_n - \delta_1\right)\sqrt{N}\right)}{2\Phi(-z_n\sqrt{N})} - \frac{\Phi\left(\left(-z_n - \delta_1\right)\sqrt{N}\right)}{2\Phi(-z_n\sqrt{N})}
+\end{eqnarray*}
+\]
+The second term on the right-hand side --- the probability of observing a "significant" observation on the wrong side of 0, given $\delta=\delta_1$ --- will quickly diminish to 0 as $N\rightarrow\infty$. If we denote this term by $q_n>0$, some algebra yields
+\[
+\begin{eqnarray*}
+(1)~~~~~~~~2(1+q_n)\Phi(-z_n\sqrt{N})&=&\Phi\left(\left(z_n - \delta_1\right)\sqrt{N}\right).
+\end{eqnarray*}
+\]
+The left-hand side of (1) is decreasing in both $z_n$ and $N$, while the right side is increasing in $z_n$ and $N$. Therefore, for the equality to hold while $N$ increases, $z_n$ must decrease:
+\[
+(2)~~~~~~~~z_{n+1}<z_n.
+\]
+We also note that, by (1),
+\[
+\begin{eqnarray*}
+\Phi(-z_n\sqrt{N})&<&\Phi\left(\left(z_n - \delta_1\right)\sqrt{N}\right)\\
+\end{eqnarray*}
+\]
+which implies that 
+$$
+(3)~~~~~~~~z_n>\delta_1/2.
+$$
+Facts (2) and (3) jointly imply that $z_n$ must have a finite limit as $N\rightarrow\infty$, and that limit must be at least $\delta_1/2$.
+
+If we let $z_n=\delta_1/2+\epsilon_n$, we know from (2) that $\epsilon_n>0$, and therefore
+\[
+(4)~~~~~~~~\lim_{N\rightarrow\infty}\frac{\Phi\left(-\left(\frac{\delta_1}{2} - \epsilon_n\right)\sqrt{N}\right)}{\Phi(-\left(\frac{\delta_1}{2}+\epsilon_n\right)\sqrt{N})} = \infty.
+\]
+if $\lim_{N\rightarrow\infty}\epsilon_n\neq0$. But this limit must be finite for the equality in (1) to hold as $N\rightarrow\infty$.
+
+Therefore, by (2), (3), and (4), 
+\[
+\lim_{N\rightarrow\infty}z_n = \delta_1/2.
+\]
+
 

@@ -1,12 +1,21 @@
 ## Richard D. Morey
 ## January 2015
+## Functions added April 2015 for paper v2
 
 ## Included for some functions related to 
 ## arithmetic with logarithms
 library(BayesFactor)
 
+## Find d1 such that alpha=beta for given N
+d1_from_error = Vectorize(function(error, N){
+  critt = qt(1-error/2, N-1)
+  optimize(function(delta){
+    log(abs(pt(critt, N - 1, delta*sqrt(N)) - error))
+  }, interval = c(0, 4*critt/sqrt(N)))$minimum
+},c("error","N"))
+
 ## Find tau such that the error rates are equal
-calibrated_tau = Vectorize(function(d1, N, k = 10, NRshift = .1, tol = .01){
+calibrated_tau = Vectorize(function(d1, N, k = 10, NRshift = 2, tol = .01){
   # Find critical delta value for the error rates
   deltahat = crit_delta(d1,N)
   # Convert to critical t
@@ -14,7 +23,7 @@ calibrated_tau = Vectorize(function(d1, N, k = 10, NRshift = .1, tol = .01){
   # Find the optimal tau, then move to the right a small amount
   # to start Newton-Raphson, because we want the non-trivial solution
   # if it exists (that is, tau != 0)
-  starttau = optimal_tau(N,t) + NRshift
+  starttau = optimal_tau(N,t) * NRshift
   # Convert tau to qz = 1 + N * tau^2 
   # for optimization 
   startqz = 1 + N*starttau^2
@@ -128,18 +137,29 @@ distPlot = function(d1, N, min_d = -1, max_d=2, extrad = NULL){
   alty =  dt(dd*sqrt(N),N-1,ncp=d1 * sqrt(N))/sqrt(N)   
   
   par(lwd=2)
-  plot(dd, nully, typ='l', col="red", ylab="", xlab= "Observed effect size", yaxt='n')
+  plot(dd, nully, typ='l', col="red", ylab="", xlab= "Observed effect size (d)", yaxt='n')
   lines(dd, alty, col="blue",lty=2)
-  abline(v = c(-1,1)*cd, lty=4, col="gray")
+  abline(v = c(-1,1)*cd, lty=1, col="black")
   abline(h=0, col="gray")
   
-  axis(3, at = c(-1,1)*cd, lab=c("BF=1","BF=1"))
+  #axis(3, at = c(-1,1)*cd, lab=c("BF=1","BF=1"))
   #mtext("Bayes factor", 3, 2.5, adj=.5, cex=1.2)
+  
+  axis(3, at = seq(floor(min_d*sqrt(N)), ceiling(max_d*sqrt(N)))/sqrt(N),
+       lab=round(seq(floor(min_d*sqrt(N)), ceiling(max_d*sqrt(N)))),2)
+  mtext("t statistic", 3, 2.5, adj=.5, cex=1.2)
+  
+  rect(par()$usr[1],0,-cd,par()$usr[4], col=rgb(0,0,1,.05), lty=0)
+  rect(par()$usr[2],0, cd,par()$usr[4], col=rgb(0,0,1,.05), lty=0)
+  
+  mtext("Reject",3,-3,adj=.05, col="blue")
+  mtext("Reject",3,-3,adj=.95, col="blue")
+  
   
   mtext("Density", 2, 1, padj=.5, las=0, cex = 1.2)
   if(!is.null(extrad)){
     alty2 =  dt(dd*sqrt(N),N-1,ncp=extrad * sqrt(N))/sqrt(N)      
-    lines(dd, alty2, col="blue",lty=3)
+    lines(dd, alty2, col="blue",lty=2)
   }
 }
 
