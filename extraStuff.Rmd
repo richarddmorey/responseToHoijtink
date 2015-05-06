@@ -1,14 +1,15 @@
 ---
-title: "Respose to Hoijtink et al., extras"
+title: 'Calibrated Bayes factors should not be used: a reply to Hoijtink, van Kooten,
+  and Hulsker (supplement)'
 author: "Richard D. Morey"
-date: "4 February 2015"
+date: "5 May 2015"
 output: html_document
 ---
 
 This document contains some extra content that is not in the manuscript of our rejoinder, including some details about the code and reproduction of the figures in Hoijtink et al. using my code rather than the sampling routines, and also some proofs.
 
 All code can be found in the file `utility.R`.
-```{r}
+```{r warning=FALSE,message=FALSE}
 ## for some convenience functions
 source('utility.R')
 ```
@@ -28,10 +29,15 @@ The most important functions are:
     *  `d1`: true effect size $\delta_1$ against which to calibrate
     *  `N`: sample size
     *  `k`: number of iterations for Newton-Raphson solver
+*  `d1_from_error(alpha, N)`: Find the calibrated effect size $\delta_1$ for a given Type I error rate $\alpha$ and sample size $N$, assuming calibration Definition 1. Can also be used with `calibrated_tau` for finding $\tau$ under calibration Definition 2, because Bayes factor will be solely determined by $\alpha$.
+    *  `error`: Type I error rate $\alpha$
+    *  `N`: sample size
+
+
 
 ### Reproduce plots in Hoijtink et al.
 
-We first use the functions to reproduce the plots in Hoijtink et al., to show that the code yields the same numbers as Hoijtink's code, but without requiring sampling (and nearly instantaneously).
+We first use the functions to reproduce the plots in Hoijtink et al., to show that the code yields the same numbers as Hoijtink's code, but without requiring sampling and nearly instantaneously. Circles do not line up with the vertical lines due to simulation error in HKH.
 
 ```{r echo=FALSE}
 ##  Reproduce their Figure 1
@@ -91,7 +97,7 @@ points(calibrated_tau(d1,N),1-2*pt(-cd*sqrt(N),N-1))
 
 ```
 
-The algorithm fails to converge for one of the values off the plot to the left. This is because there is *no (nontrivial) solution* for $\delta_1=.2$ (oddly enough, this value is cut off of the left side of Figure 2 in HKH). The lack of nontrivial solution will be proved in the next section.
+The algorithm fails to converge for one of the values off the plot to the left. This is because there is *no (nontrivial) solution* for $\delta_1=.2$ (this value is cut off of the left side of Figure 2 in HKH). The lack of nontrivial solution will be proved in the next section.
 
 ### Proof of nonexistance of nontrivial calibration when critical $|t|\leq1$
 
@@ -106,7 +112,7 @@ It is also trivial to show that
 \[
 \lim_{\tau\rightarrow\infty} B = \infty;
 \]
-that is, as $\tau$ gets larger the Bayes factor approaches $\infty$. The null will be favored as the alternative places weight on arbitrarily high effect sizes. 
+that is, as $\tau$ gets larger the Bayes factor approaches $\infty$. The null will be favored as the alternative places weight on arbitrarily high effect sizes.
 
 The figure below shows both of these trends for the critical $t$ statistic for an HKH-calibration against $\delta_1=.2$, $\delta_1=.25$, and $\delta_1=.3$ with a sample size of $N=36$ (all of these values can be found in HKH Figure 2).
 
@@ -154,7 +160,7 @@ For this to yield a nontrivial solution $\tau>0$,
 \]
 which implies that $|t|>1$. The critical $t$ statistic under HKH-calibration which must be set to yield $B=0$ must in turn be greater than 1 (or less than -1), or there will be no solution such that $\tau>0$ yields a Bayes factor of 1.
 
-For the values of $\delta_1$ in the figure above (.2,.25, and .3), the critical $|t|$ statistics under HKH-calibration Definition 1 are
+For the values of $\delta_1$ in the figure above (.2,.25, and .3), the critical $|t|$ statistics under HKH-calibration Definition 1, for $N=36$, are
 
 $\delta_1$ | critical $|t|$ | HKH-$\tau$
 -----------|--------------|----
@@ -188,16 +194,14 @@ points(rep(log(36),3), seq(.2,.3,.05), pch=21, col="black", bg="black")
 
 ```
 
-For $\delta_1=.25$ and $N=36$, HKH-calibration yields a $\tau$ value so small that *no matter how large the effect size*, the Bayes factor can never exceed 7.1 in favor of the alternative.
-
 ```{r echo=FALSE}
 N = 36
 d1 = c(.20,.25,.3)
 ```
 
-### Proof
+### Proof of the upper limit on the calibrated Bayes factor
 
-Taking the limit as $t\rightarrow\infty$,
+For $\delta_1=.25$ and $N=36$, HKH-calibration yields a $\tau$ value so small that *no matter how large the effect size*, the Bayes factor can never exceed 7.1 in favor of the alternative. Taking the limit of $B$ as $t\rightarrow\infty$,
 \[
 \lim_{t\rightarrow\infty} B = -\frac{N-1}{2}\log\left(1 + N\tau^2\right)
 \]
@@ -215,7 +219,7 @@ abline(h = exp((N-1)/2*log(1 + N*calibrated_tau(d1[2], N)^2)), col="red")
 
 ```
 
-It should be noted that this limiting behaviour for the scaled-information Bayes factor is known (see Liang et al. 2008, who call it the *information paradox*; the existence of this limit has been used as an argument for the JZS prior) but for most reasonable analysis, this limit is very large. For HKH-calibration, however, the very small size of $\tau$ makes the limit a much more modest size.
+It should be noted that this limiting behaviour for the scaled-information Bayes factor is known (see Liang et al. 2008, who call it the *information paradox*; the existence of this limit has been used as an argument for a Cauchy prior rather than a normal prior on $\delta$) but for most reasonable analysis, this limit is very large. For HKH calibration, however, the very small size of $\tau$ makes the limit a much more modest size.
 
 ### Proof that criteria approach $\delta_1/2$ as $N\rightarrow\infty$
 
@@ -241,7 +245,7 @@ where $\beta_n$ is the Type II error rate when $N=n$. Since we assume equal erro
   &=&\frac{\Phi\left(\left(z_n - \delta_1\right)\sqrt{N}\right)}{2\Phi(-z_n\sqrt{N})} - \frac{\Phi\left(\left(-z_n - \delta_1\right)\sqrt{N}\right)}{2\Phi(-z_n\sqrt{N})}
 \end{eqnarray*}
 \]
-The second term on the right-hand side --- the probability of observing a "significant" observation on the wrong side of 0, given $\delta=\delta_1$ --- will quickly diminish to 0 as $N\rightarrow\infty$. If we denote this term by $q_n>0$, some algebra yields
+The second term on the right-hand side --- whose numerator is the probability of observing a "significant" observation on the wrong side of 0, given $\delta=\delta_1$ --- will quickly diminish to 0 as $N\rightarrow\infty$. If we denote this term by $q_n>0$, some algebra yields
 \[
 \begin{eqnarray*}
 (1)~~~~~~~~2(1+q_n)\Phi(-z_n\sqrt{N})&=&\Phi\left(\left(z_n - \delta_1\right)\sqrt{N}\right).
